@@ -28,3 +28,5 @@ global using eShop.Ordering.Infrastructure;
 global using eShop.Ordering.Infrastructure.Idempotency;
 global using eShop.Ordering.Infrastructure.Repositories;
 global using eShop.ServiceDefaults;
+
+

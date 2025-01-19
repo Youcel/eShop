@@ -11,7 +11,8 @@ public class Order
     [Required]
     public Address Address { get; private set; }
 
-    public int? BuyerId { get; private set; }
+    public int? BuyerId { get; set; }  
+
 
     public Buyer Buyer { get; }
 
@@ -126,6 +127,20 @@ public class Order
             Description = "The payment was performed at a simulated \"American Bank checking bank account ending on XX35071\"";
         }
     }
+
+
+    public void SetStatusToComplete()
+    {
+        if (OrderStatus == OrderStatus.Complete)
+        {
+            throw new OrderingDomainException("Order is already marked as complete.");
+        }
+
+        OrderStatus = OrderStatus.Complete;
+        Description = "The order was completed.";
+        AddDomainEvent(new OrderStatusChangedToCompleteDomainEvent(Id));
+    }
+
 
     public void SetShippedStatus()
     {

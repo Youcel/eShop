@@ -175,4 +175,14 @@ public class OrderAggregateTest
         //Assert
         Assert.AreEqual(fakeOrder.DomainEvents.Count, expectedResult);
     }
+    [TestMethod]
+    public void OrderStatus_Should_Contain_Complete_Status()
+    {
+        // Arrange
+        var completeStatus = (int)OrderStatus.Complete;
+
+        // Assert
+        Assert.AreEqual(7, completeStatus); 
+    }
+
 }

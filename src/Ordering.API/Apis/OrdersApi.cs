@@ -15,6 +15,7 @@ public static class OrdersApi
         api.MapGet("/cardtypes", GetCardTypesAsync);
         api.MapPost("/draft", CreateOrderDraftAsync);
         api.MapPost("/", CreateOrderAsync);
+        api.MapPost("/complete", CompleteOrderAsync);
 
         return api;
     }
@@ -47,6 +48,42 @@ public static class OrdersApi
 
         return TypedResults.Ok();
     }
+
+    public static async Task<Results<Ok, BadRequest<string>, ProblemHttpResult>> CompleteOrderAsync(
+    [FromHeader(Name = "x-requestid")] Guid requestId,
+    CompleteOrderRequest request,
+    [AsParameters] OrderServices services)
+    {
+        if (requestId == Guid.Empty)
+        {
+            return TypedResults.BadRequest("Empty GUID is not valid for request ID.");
+        }
+
+        if (request == null || request.OrderId <= 0)
+        {
+            return TypedResults.BadRequest("Invalid order ID.");
+        }
+
+        var command = new CompleteOrderCommand(request.OrderId);
+
+        services.Logger.LogInformation(
+            "Yucel RequestId {requestId} Sending command: {CommandName} - OrderId: {OrderId} ({@Command})",
+             requestId,
+            command.GetGenericTypeName(),
+            command.OrderId,
+            command);
+
+        var requestCompleteOrder = new IdentifiedCommand<CompleteOrderCommand, bool>(command, requestId);
+
+        var commandResult = await services.Mediator.Send(requestCompleteOrder);
+        if (!commandResult)
+        {
+            return TypedResults.Problem(detail: "Complete order failed to process.", statusCode: 500);
+        }
+
+        return TypedResults.Ok();
+    }
+
 
     public static async Task<Results<Ok, BadRequest<string>, ProblemHttpResult>> ShipOrderAsync(
         [FromHeader(Name = "x-requestid")] Guid requestId,
